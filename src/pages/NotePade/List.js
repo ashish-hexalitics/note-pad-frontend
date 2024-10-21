@@ -1,17 +1,30 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // For navigation to the Add Note page
-
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useGetNotesApiQuery } from "../../store/slices/noteSlice/api";
+import { getNotes } from "../../store/slices/noteSlice/reducer";
+import { useDispatch } from "react-redux";
+useDispatch;
 function NotepadList() {
+  const dispatch = useDispatch();
+  const [getNotesApi, { isLoading, isError, data }] = useGetNotesApiQuery();
+
+  console.log(data);
+  useEffect(() => {
+    if (data) {
+      dispatch(getNotes(data));
+    }
+  }, [data]);
+
   const [notes, setNotes] = useState([
-    'First note',
-    'Second note',
-    'Important task to remember',
-    'Meeting notes',
-    'Some other random note',
+    "First note",
+    "Second note",
+    "Important task to remember",
+    "Meeting notes",
+    "Some other random note",
   ]); // Preloaded example notes
-  const [searchQuery, setSearchQuery] = useState(''); // State to manage search query
+  const [searchQuery, setSearchQuery] = useState(""); // State to manage search query
   const [isModalOpen, setIsModalOpen] = useState(false); // State to manage modal visibility
-  const [newNote, setNewNote] = useState(''); // State to manage new note input
+  const [newNote, setNewNote] = useState(""); // State to manage new note input
   const navigate = useNavigate(); // For navigation
 
   // Function to handle deleting a note
@@ -26,9 +39,9 @@ function NotepadList() {
 
   // Function to add a new note
   const addNote = () => {
-    if (newNote.trim() !== '') {
+    if (newNote.trim() !== "") {
       setNotes([...notes, newNote]);
-      setNewNote(''); // Clear input after adding
+      setNewNote(""); // Clear input after adding
       setIsModalOpen(false); // Close modal
     }
   };
@@ -72,7 +85,7 @@ function NotepadList() {
                 </div>
                 <div className="flex justify-end space-x-4">
                   <button
-                    onClick={() => alert('Edit functionality coming soon!')} // Placeholder for editing functionality
+                    onClick={() => alert("Edit functionality coming soon!")} // Placeholder for editing functionality
                     className="text-blue-500 hover:text-blue-700 font-semibold"
                   >
                     Edit
@@ -95,7 +108,9 @@ function NotepadList() {
         {isModalOpen && (
           <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
             <div className="bg-white w-full max-w-lg p-6 rounded-lg shadow-lg">
-              <h2 className="text-2xl font-bold mb-4 text-center">Add New Note</h2>
+              <h2 className="text-2xl font-bold mb-4 text-center">
+                Add New Note
+              </h2>
               <textarea
                 className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
                 rows="4"

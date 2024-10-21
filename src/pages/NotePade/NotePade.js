@@ -1,7 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAddNotesApiMutation } from "../../store/slices/noteSlice/api";
+import { getNotes } from "../../store/slices/noteSlice/reducer";
+import { useDispatch } from "react-redux";
 
 function AddNote() {
+  const [addNotesApi, { isLoading, isError, data }] = useAddNotesApiMutation();
+  const dispatch = useDispatch();
   const [title, setTitle] = useState(""); // State to store note title
   const [note, setNote] = useState(""); // State to store note content
   const [username, setUsername] = useState("John Doe"); // State for user name
@@ -43,7 +48,9 @@ function AddNote() {
 
         {/* Note Content */}
         <div className="mb-6">
-          <label className="block text-lg font-semibold mb-2">Note Content</label>
+          <label className="block text-lg font-semibold mb-2">
+            Note Content
+          </label>
           <textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
@@ -78,7 +85,9 @@ function AddNote() {
 
         {/* Profile Color Picker */}
         <div className="mb-4">
-          <label className="block text-lg font-semibold mb-2">Profile Color</label>
+          <label className="block text-lg font-semibold mb-2">
+            Profile Color
+          </label>
           <input
             type="color"
             value={profileColor}
@@ -92,7 +101,9 @@ function AddNote() {
 
         {/* Rename Username */}
         <div className="mb-4">
-          <label className="block text-lg font-semibold mb-2">Rename Username</label>
+          <label className="block text-lg font-semibold mb-2">
+            Rename Username
+          </label>
           <input
             type="text"
             value={username}

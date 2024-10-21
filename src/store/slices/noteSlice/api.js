@@ -6,6 +6,15 @@ export const noteApi = createApi({
   baseQuery: baseQueryWithInterceptor,
   endpoints: (builder) => ({
     getNotesApi: builder.query({
+      query: () => ({
+        url: `/notes`,
+        method: "GET",
+        headers: {
+          authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      }),
+    }),
+    getNoteByIdApi: builder.query({
       query: (noteId) => ({
         url: `/notes/${noteId}`,
         method: "GET",
@@ -46,4 +55,10 @@ export const noteApi = createApi({
   }),
 });
 
-export const { useGetUserQuery } = noteApi;
+export const {
+  useGetNotesApiQuery,
+  useGetNoteByIdApiQuery,
+  useAddNotesApiMutation,
+  useUpdateNotesApiMutation,
+  useDeleteNotesApiMutation
+} = noteApi;
