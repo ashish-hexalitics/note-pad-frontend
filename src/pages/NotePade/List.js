@@ -1,48 +1,64 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useGetNotesApiQuery } from "../../store/slices/noteSlice/api";
+import {
+  useGetNotesApiQuery,
+  useAddNotesApiMutation,
+  useDeleteNotesApiMutation,
+} from "../../store/slices/noteSlice/api";
 import { getNotes } from "../../store/slices/noteSlice/reducer";
-import { useDispatch } from "react-redux";
-useDispatch;
+import { useDispatch, useSelector } from "react-redux";
+
 function NotepadList() {
   const dispatch = useDispatch();
-  const [getNotesApi, { isLoading, isError, data }] = useGetNotesApiQuery();
+  const { user } = useSelector((state) => state.userSlice);
+  const { data, isLoading, isError, refetch } = useGetNotesApiQuery(user?._id);
+  const notes = useSelector((state) => state.noteSlice.notes);
 
-  console.log(data);
+  // Using the mutation hook for adding a note
+  const [addNoteApi, { isLoading: isAdding, isError: isAddError, isSuccess }] =
+    useAddNotesApiMutation();
+  
+  // Using the mutation hook for deleting a note
+  const [deleteNoteApi, { isLoading: isDeleting, isError: isDeleteError }] =
+    useDeleteNotesApiMutation();
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [title, setTitle] = useState(""); // For the new note title
+  const navigate = useNavigate();
+
   useEffect(() => {
-    if (data) {
-      dispatch(getNotes(data));
+    if (data && !isLoading && !isError) {
+      dispatch(getNotes(data.data));
     }
-  }, [data]);
+  }, [data, isLoading, isError, dispatch]);
 
-  const [notes, setNotes] = useState([
-    "First note",
-    "Second note",
-    "Important task to remember",
-    "Meeting notes",
-    "Some other random note",
-  ]); // Preloaded example notes
-  const [searchQuery, setSearchQuery] = useState(""); // State to manage search query
-  const [isModalOpen, setIsModalOpen] = useState(false); // State to manage modal visibility
-  const [newNote, setNewNote] = useState(""); // State to manage new note input
-  const navigate = useNavigate(); // For navigation
-
-  // Function to handle deleting a note
-  const deleteNote = (index) => {
-    setNotes(notes.filter((_, noteIndex) => noteIndex !== index));
+  // Function to delete a note
+  const deleteNote = async (noteId) => {
+    try {
+      await deleteNoteApi(noteId).unwrap(); 
+      refetch();
+    } catch (error) {
+      console.error("Failed to delete note: ", error);
+    }
   };
 
-  // Function to handle searching for a note
   const filteredNotes = notes.filter((note) =>
-    note.toLowerCase().includes(searchQuery.toLowerCase())
+    note.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Function to add a new note
-  const addNote = () => {
-    if (newNote.trim() !== "") {
-      setNotes([...notes, newNote]);
-      setNewNote(""); // Clear input after adding
-      setIsModalOpen(false); // Close modal
+  const addNote = async () => {
+    if (title.trim() !== "") {
+      try {
+        const res = await addNoteApi({ title, owner: user?._id, content: "" }).unwrap();
+        setTitle("");
+        setIsModalOpen(false);
+        refetch();
+        navigate(`/user/add-note/${res.data._id}`);
+      } catch (error) {
+        console.error("Failed to add note: ", error);
+      }
     }
   };
 
@@ -78,23 +94,25 @@ function NotepadList() {
             filteredNotes.map((note, index) => (
               <div
                 key={index}
-                className="bg-white p-4 rounded-lg shadow-md flex flex-col justify-between"
+                className="bg-white p-4 rounded-lg shadow-md flex flex-col justify-between overflow-hidden"
               >
                 <div className="mb-4">
-                  <p className="text-lg font-semibold">{note}</p>
+                  <p className="text-lg font-semibold">{note.title}</p>
+                  <p className="text-lg font-semibold">{note.content}</p>
                 </div>
                 <div className="flex justify-end space-x-4">
                   <button
-                    onClick={() => alert("Edit functionality coming soon!")} // Placeholder for editing functionality
+                    onClick={() => navigate(`/user/edit-note/${note._id}`)}
                     className="text-blue-500 hover:text-blue-700 font-semibold"
                   >
                     Edit
                   </button>
                   <button
-                    onClick={() => deleteNote(index)}
+                    onClick={() => deleteNote(note._id)} // Pass the noteId to delete
                     className="text-red-500 hover:text-red-700 font-semibold"
+                    disabled={isDeleting} // Disable button while deleting
                   >
-                    Delete
+                    {isDeleting ? "Deleting..." : "Delete"}
                   </button>
                 </div>
               </div>
@@ -108,16 +126,19 @@ function NotepadList() {
         {isModalOpen && (
           <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
             <div className="bg-white w-full max-w-lg p-6 rounded-lg shadow-lg">
-              <h2 className="text-2xl font-bold mb-4 text-center">
-                Add New Note
-              </h2>
-              <textarea
-                className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                rows="4"
-                placeholder="Enter your note..."
-                value={newNote}
-                onChange={(e) => setNewNote(e.target.value)}
-              ></textarea>
+              {/* Note Title */}
+              <div className="mb-4">
+                <label className="block text-lg font-semibold mb-2">
+                  Add New Note Title
+                </label>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  placeholder="Enter the title of your note..."
+                />
+              </div>
               <div className="flex justify-end space-x-4 mt-4">
                 <button
                   onClick={() => setIsModalOpen(false)} // Close modal
@@ -128,10 +149,16 @@ function NotepadList() {
                 <button
                   onClick={addNote}
                   className="bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600 transition duration-200"
+                  disabled={isAdding} // Disable while adding note
                 >
-                  Add Note
+                  {isAdding ? "Adding..." : "Add Note"}
                 </button>
               </div>
+
+              {/* Show error message if failed to add note */}
+              {isAddError && (
+                <p className="text-red-500 mt-4">Failed to add note.</p>
+              )}
             </div>
           </div>
         )}

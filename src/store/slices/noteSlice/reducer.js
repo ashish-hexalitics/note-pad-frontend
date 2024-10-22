@@ -14,8 +14,8 @@ export const createUserSlice = createSlice({
       state.notes = action.payload;
       return state;
     },
-    addNote: (state, action) => {
-      state.note = action.payload.note;
+    setNote: (state, action) => {
+      state.note = action.payload;
       return state;
     },
     updateNote: (state, action) => {
@@ -35,7 +35,7 @@ export const createUserSlice = createSlice({
   },
 });
 
-export const { getNotes, addNote, updateNote, getCollaborators, resetNotes } =
+export const { getNotes, setNote, updateNote, getCollaborators, resetNotes } =
   createUserSlice.actions;
 
 export default createUserSlice.reducer;

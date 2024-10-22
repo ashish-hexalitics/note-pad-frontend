@@ -18,7 +18,7 @@ function Login() {
       e.preventDefault();
       const result = await login({ email, password }).unwrap();
       localStorage.setItem('access_token',result.token)
-      navigate('/login')
+      navigate('/user/notes')
     } catch (error) {
       // Handle login error
       console.error("Login failed:", error);

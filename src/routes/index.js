@@ -32,7 +32,11 @@ export const userRoutes = [
     component: NotePadList,
   },
   {
-    path: "add-note",
+    path: "add-note/:noteId",
+    component: NotePade,
+  },
+  {
+    path: "edit-note/:noteId",
     component: NotePade,
   },
 ];
