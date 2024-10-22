@@ -52,6 +52,15 @@ export const noteApi = createApi({
         },
       }),
     }),
+    updateNotesCollaboratorsApi: builder.mutation({
+      query: (noteId) => ({
+        url: `/notes/collaborators/${noteId}`,
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      }),
+    }),
   }),
 });
 
@@ -60,5 +69,6 @@ export const {
   useGetNoteByIdApiQuery,
   useAddNotesApiMutation,
   useUpdateNotesApiMutation,
-  useDeleteNotesApiMutation
+  useDeleteNotesApiMutation,
+  useUpdateNotesCollaboratorsApiMutation
 } = noteApi;

@@ -39,4 +39,8 @@ export const userRoutes = [
     path: "edit-note/:noteId",
     component: NotePade,
   },
+  {
+    path: "invitaion-note/:noteId",
+    component: NotePade,
+  },
 ];

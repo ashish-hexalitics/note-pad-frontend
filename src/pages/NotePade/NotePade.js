@@ -3,38 +3,154 @@ import { useNavigate, useParams } from "react-router-dom";
 import {
   useGetNoteByIdApiQuery,
   useUpdateNotesApiMutation,
+  useUpdateNotesCollaboratorsApiMutation,
 } from "../../store/slices/noteSlice/api";
 import { setNote } from "../../store/slices/noteSlice/reducer";
 import { useDispatch, useSelector } from "react-redux";
+import { useGetUserQuery } from "../../store/slices/userSlice/api";
+import { setUser } from "../../store/slices/userSlice/reducer";
+import io from "socket.io-client";
+
+const socket = io("http://localhost:8000"); // Replace with your server URL
 
 function AddNote() {
   const params = useParams();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.userSlice);
   const note = useSelector((state) => state.noteSlice.note);
-  const [profileColor, setProfileColor] = useState("#4f46e5"); // Default profile color
-  const [content, setContent] = useState(note.content); // State for user name
-  const [collaborators, setCollaborators] = useState([]); // State for collaborators
+  const [content, setContent] = useState(note.content);
+  const [collaborators, setCollaborators] = useState([]);
+  const [permision, setPermision] = useState("view");
+
   const navigate = useNavigate();
 
   const {
     data: noteData,
     isLoading,
     isError,
-  } = useGetNoteByIdApiQuery(params.noteId); // Fetch note by ID
-  const [updateNote, { isLoading: isUpdating }] = useUpdateNotesApiMutation(); // Mutation for updating notes
+  } = useGetNoteByIdApiQuery(params.noteId);
+  const [updateNote] = useUpdateNotesApiMutation();
+  const [updateNotesCollaboratorsApi] =
+    useUpdateNotesCollaboratorsApiMutation();
 
   useEffect(() => {
     if (noteData && !isLoading && !isError) {
       dispatch(setNote(noteData?.data));
       setContent(noteData.data.content);
-      setCollaborators(noteData?.data.collaborators || []); // Fetch collaborators
+      setCollaborators(noteData?.data.collaborators || []);
+      console.log(noteData);
+      if (noteData?.data?.isOwner) {
+        setPermision("all");
+      }
     }
   }, [noteData, isLoading, isError, dispatch]);
 
-  // Placeholder function for inviting friends
+  const { data: userData } = useGetUserQuery();
+
+  useEffect(() => {
+    if (!user || Object.keys(user).length === 0) {
+      if (
+        userData &&
+        userData?.data?.user &&
+        noteData &&
+        noteData?.data?.owner
+      ) {
+        socket.emit("joinNote", {
+          noteId: params.noteId,
+          user: {
+            ...userData.data.user,
+            token: localStorage.getItem("access_token"),
+          },
+        });
+        // Listen for collaborator updates
+        socket.on("updateCollaborators", (updatedCollaborators) => {
+          console.log(
+            "Updated Collaborators:",
+            updatedCollaborators.data.collaborators
+          );
+          setCollaborators(updatedCollaborators.data.collaborators);
+        });
+        if (userData.data.user._id !== noteData.data.owner) {
+          handlecupdateCollabe();
+        } else {
+          setPermision("all");
+        }
+        dispatch(setUser(userData?.data?.user));
+      }
+    }
+    return () => {
+      socket.off("updateCollaborators");
+      socket.disconnect();
+    };
+  }, [user, userData, dispatch]);
+
+  // useEffect(() => {
+  //   // Join the note room when the component mounts
+  //   if (user) {
+  //     console.log('gaya')
+  //     socket.emit("joinNote", {
+  //       noteId: params.noteId,
+  //       user: { ...user, token: localStorage.getItem("access_token") },
+  //     });
+
+  //     // Listen for collaborator updates
+  //     socket.on("updateCollaborators", (updatedCollaborators) => {
+  //       console.log(
+  //         "Updated Collaborators:",
+  //         updatedCollaborators.data.collaborators
+  //       );
+  //       setCollaborators(updatedCollaborators.data.collaborators);
+  //     });
+  //   }
+  //   // Cleanup on component unmount
+  //   return () => {
+  //     socket.off("updateCollaborators");
+  //     socket.disconnect();
+  //   };
+  // }, [user]);
+
+  // socket.on("updateCollaborators", (updatedCollaborators) => {
+  //   console.log(
+  //     "Updated Collaborators:",
+  //     updatedCollaborators.data.collaborators
+  //   );
+  //   setCollaborators(updatedCollaborators.data.collaborators);
+  // });
+
+  const handlecupdateCollabe = async () => {
+    const res = await updateNotesCollaboratorsApi(noteData.data._id).unwrap();
+    setPermision(
+      res?.data?.collaborator ? res?.data?.collaborator?.permission : "all"
+    );
+  };
+
+  const handlechange = async (e) => {
+    e.preventDefault();
+    setContent(e.target.value);
+   const data = await updateNote({
+      content: e.target.value,
+      noteId: params.noteId,
+    }).unwrap();
+    socket.emit("updateNoteContent", data);
+    socket.on("noteContentUpdated", (updatedNote) => {
+      console.log(updatedNote.data,"updatedNote")
+    });
+  };
+
   const handleInviteFriends = () => {
-    alert("Invite friends functionality is coming soon!");
+    if (note.sharedLink) {
+      navigator.clipboard
+        .writeText(note.sharedLink)
+        .then(() => {
+          alert("Invite link copied to clipboard! Share it with your friends.");
+        })
+        .catch((err) => {
+          console.error("Failed to copy link: ", err);
+          alert("Failed to copy invite link. Please try again.");
+        });
+    } else {
+      alert("No invite link available.");
+    }
   };
 
   const handleRemoveCollaborator = (collaboratorId) => {
@@ -43,20 +159,8 @@ function AddNote() {
     );
   };
 
-  const handlechange = async (e) => {
-    e.preventDefault();
-    setContent(e.target.value);
-    await updateNote({
-      content: e.target.value,
-      noteId: params.noteId,
-    }).unwrap();
-  };
-
-  console.log(note, user, "noteData");
-
   return (
     <div className="min-h-screen bg-gray-100 p-6 flex justify-center items-start space-x-10">
-      {/* Main Note Section */}
       <div className="max-w-5xl w-full bg-white p-8 rounded-lg shadow-md">
         <h1 className="text-3xl font-bold mb-6 text-center">Add a New Note</h1>
 
@@ -81,6 +185,7 @@ function AddNote() {
             rows="8"
             className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
             placeholder="Write your note content here..."
+            disabled={permision !== "all" && permision !== "edit"}
           ></textarea>
         </div>
       </div>
@@ -94,25 +199,27 @@ function AddNote() {
           onClick={handleInviteFriends}
           className="w-full bg-blue-500 text-white px-4 py-2 mb-4 rounded-md hover:bg-blue-600 transition duration-200"
         >
-          Invite Friends
+          Copy Invite Friends Link
         </button>
 
         {/* Collaborators List */}
         <h3 className="text-lg font-semibold mb-2">Collaborators</h3>
         <ul className="space-y-2">
           {collaborators.length > 0 ? (
-            collaborators.map((collaborator) => (
+            collaborators.map((collaborator, index) => (
               <li
-                key={collaborator.id}
+                key={index}
                 className="flex justify-between items-center bg-gray-100 p-2 rounded-md"
               >
                 <span>{collaborator.name}</span>
-                <button
-                  onClick={() => handleRemoveCollaborator(collaborator.id)}
-                  className="text-red-500 hover:text-red-700 font-semibold"
-                >
-                  Remove
-                </button>
+                {userData?.data?.user?._id === noteData?.data?.owner && (
+                  <button
+                    onClick={() => handleRemoveCollaborator(collaborator.id)}
+                    className="text-red-500 hover:text-red-700 font-semibold"
+                  >
+                    Remove
+                  </button>
+                )}
               </li>
             ))
           ) : (
