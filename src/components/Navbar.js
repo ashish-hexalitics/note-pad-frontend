@@ -13,7 +13,7 @@ function Navbar() {
               Home
             </Link>
           </li>
-          <li>
+          {/* <li>
             <Link to="/login" className="hover:text-gray-300">
               Login
             </Link>
@@ -22,15 +22,24 @@ function Navbar() {
             <Link to="/register" className="hover:text-gray-300">
               Register
             </Link>
-          </li>
+          </li> */}
           <li>
             <Link to="/user/notes" className="hover:text-gray-300">
               notes
             </Link>
           </li>
         </ul>
-        <div>
+        <div className="flex space-x-4">
           <p className="hover:text-gray-300 text-white">{user.name}</p>
+          <button
+          className="hover:text-gray-300 text-white"
+            onClick={() => {
+              localStorage.removeItem("access_token");
+              window.location.reload();
+            }}
+          >
+            logout
+          </button>
         </div>
       </div>
     </nav>

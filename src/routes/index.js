@@ -36,6 +36,10 @@ export const userRoutes = [
     component: NotePade,
   },
   {
+    path: "view-note/:noteId",
+    component: NotePade,
+  },
+  {
     path: "edit-note/:noteId",
     component: NotePade,
   },

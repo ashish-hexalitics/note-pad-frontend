@@ -4,20 +4,28 @@ import {
   useGetNotesApiQuery,
   useAddNotesApiMutation,
   useDeleteNotesApiMutation,
+  useGetNotesByCollaboratorIdApiQuery,
 } from "../../store/slices/noteSlice/api";
-import { getNotes } from "../../store/slices/noteSlice/reducer";
+import {
+  getNotes,
+  getcollaborateNotes,
+} from "../../store/slices/noteSlice/reducer";
 import { useDispatch, useSelector } from "react-redux";
 
 function NotepadList() {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.userSlice);
   const { data, isLoading, isError, refetch } = useGetNotesApiQuery(user?._id);
-  const notes = useSelector((state) => state.noteSlice.notes);
+  const { data: collabNotes } = useGetNotesByCollaboratorIdApiQuery(user?._id);
+
+  console.log(data, collabNotes, "collabNotes");
+
+  const { notes, collaborateNotes } = useSelector((state) => state.noteSlice);
 
   // Using the mutation hook for adding a note
   const [addNoteApi, { isLoading: isAdding, isError: isAddError, isSuccess }] =
     useAddNotesApiMutation();
-  
+
   // Using the mutation hook for deleting a note
   const [deleteNoteApi, { isLoading: isDeleting, isError: isDeleteError }] =
     useDeleteNotesApiMutation();
@@ -33,10 +41,16 @@ function NotepadList() {
     }
   }, [data, isLoading, isError, dispatch]);
 
+  useEffect(() => {
+    if (collabNotes) {
+      dispatch(getcollaborateNotes(collabNotes.data));
+    }
+  }, [collabNotes, isLoading, isError, dispatch]);
+
   // Function to delete a note
   const deleteNote = async (noteId) => {
     try {
-      await deleteNoteApi(noteId).unwrap(); 
+      await deleteNoteApi(noteId).unwrap();
       refetch();
     } catch (error) {
       console.error("Failed to delete note: ", error);
@@ -51,7 +65,11 @@ function NotepadList() {
   const addNote = async () => {
     if (title.trim() !== "") {
       try {
-        const res = await addNoteApi({ title, owner: user?._id, content: "" }).unwrap();
+        const res = await addNoteApi({
+          title,
+          owner: user?._id,
+          content: "",
+        }).unwrap();
         setTitle("");
         setIsModalOpen(false);
         refetch();
@@ -89,7 +107,8 @@ function NotepadList() {
         </div>
 
         {/* Notes Cards */}
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <p className="text-lg font-semibold mb-2">My notes</p>
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-2">
           {filteredNotes.length > 0 ? (
             filteredNotes.map((note, index) => (
               <div
@@ -113,6 +132,40 @@ function NotepadList() {
                     disabled={isDeleting} // Disable button while deleting
                   >
                     {isDeleting ? "Deleting..." : "Delete"}
+                  </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="text-center text-gray-500">No notes found</p>
+          )}
+        </div>
+
+        {/* Notes Cards */}
+        <p className="text-lg font-semibold mb-2">invited notes</p>
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          {collaborateNotes.length > 0 ? (
+            collaborateNotes.map((note, index) => (
+              <div
+                key={index}
+                className="bg-white p-4 rounded-lg shadow-md flex flex-col justify-between overflow-hidden"
+              >
+                <div className="mb-4">
+                  <p className="text-lg font-semibold">{note.title}</p>
+                  <p className="text-lg font-semibold">{note.content}</p>
+                </div>
+                <div className="flex justify-end space-x-4">
+                  <button
+                    onClick={() =>
+                      navigate(
+                        `/user/${
+                          note.permission === "edit" ? "edit" : "view"
+                        }-note/${note._id}`
+                      )
+                    }
+                    className="text-blue-500 hover:text-blue-700 font-semibold"
+                  >
+                    {note.permission === "edit" ? "Edit" : "View"}
                   </button>
                 </div>
               </div>

@@ -3,6 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
   notes: [],
   note: {},
+  collaborateNotes:[],
   collaborators: [],
 };
 
@@ -12,6 +13,10 @@ export const createUserSlice = createSlice({
   reducers: {
     getNotes: (state, action) => {
       state.notes = action.payload;
+      return state;
+    },
+    getcollaborateNotes: (state, action) => {
+      state.collaborateNotes = action.payload;
       return state;
     },
     setNote: (state, action) => {
@@ -35,7 +40,7 @@ export const createUserSlice = createSlice({
   },
 });
 
-export const { getNotes, setNote, updateNote, getCollaborators, resetNotes } =
+export const { getNotes,getcollaborateNotes, setNote, updateNote, getCollaborators, resetNotes } =
   createUserSlice.actions;
 
 export default createUserSlice.reducer;

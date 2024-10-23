@@ -14,6 +14,15 @@ export const noteApi = createApi({
         },
       }),
     }),
+    getNotesByCollaboratorIdApi: builder.query({
+      query: (collaboratorId) => ({
+        url: `/notes/collaborator/${collaboratorId}`,
+        method: "GET",
+        headers: {
+          authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      }),
+    }),
     getNoteByIdApi: builder.query({
       query: (noteId) => ({
         url: `/notes/${noteId}`,
@@ -53,8 +62,14 @@ export const noteApi = createApi({
       }),
     }),
     updateNotesCollaboratorsApi: builder.mutation({
-      query: (noteId) => ({
+      query: ({ noteId, collaboratorId, permission }) => ({
         url: `/notes/collaborators/${noteId}`,
+        body: collaboratorId
+          ? {
+              collaboratorId,
+              permission,
+            }
+          : {},
         method: "POST",
         headers: {
           authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -66,9 +81,10 @@ export const noteApi = createApi({
 
 export const {
   useGetNotesApiQuery,
+  useGetNotesByCollaboratorIdApiQuery,
   useGetNoteByIdApiQuery,
   useAddNotesApiMutation,
   useUpdateNotesApiMutation,
   useDeleteNotesApiMutation,
-  useUpdateNotesCollaboratorsApiMutation
+  useUpdateNotesCollaboratorsApiMutation,
 } = noteApi;

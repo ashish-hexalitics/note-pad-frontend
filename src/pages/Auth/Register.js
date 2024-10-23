@@ -1,17 +1,18 @@
-import React, { useState } from 'react';
-import { useRegisterMutation } from '../../store/slices/authSlice/api';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { useRegisterMutation } from "../../store/slices/authSlice/api";
+import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 function Register() {
   const [register, { isLoading, isError, data }] = useRegisterMutation();
 
-  const navigate = useNavigate()
-  
+  const navigate = useNavigate();
+
   // Local state for input values
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   // Form submission handler
   const handleSubmit = async (e) => {
@@ -24,14 +25,18 @@ function Register() {
 
     // Call the register mutation with the input values
     try {
-      const result = await register({ name:fullName, email, password }).unwrap();
-      localStorage.setItem('access_token',result.token)
-      navigate('/login')
+      const result = await register({
+        name: fullName,
+        email,
+        password,
+      }).unwrap();
+      localStorage.setItem("access_token", result.token);
+      navigate("/login");
       // Handle successful registration (e.g., show success message or redirect)
-      console.log('Registration successful:', result);
+      console.log("Registration successful:", result);
     } catch (error) {
       // Handle registration error
-      console.error('Registration failed:', error);
+      console.error("Registration failed:", error);
     }
   };
 
@@ -88,16 +93,23 @@ function Register() {
             />
           </div>
 
-          <button 
+          <button
             type="submit"
             className="w-full bg-indigo-500 text-white py-2 px-4 rounded-md hover:bg-indigo-600 transition duration-200"
             disabled={isLoading} // Disable button while loading
           >
-            {isLoading ? 'Loading...' : 'Register'}
+            {isLoading ? "Loading..." : "Register"}
           </button>
 
-          {isError && <p className="text-red-500 text-center mt-2">Registration failed. Please try again.</p>}
+          {isError && (
+            <p className="text-red-500 text-center mt-2">
+              Registration failed. Please try again.
+            </p>
+          )}
         </form>
+        <Link to="/login" className=" text-indigo-600 mt-2">
+          Login
+        </Link>
       </div>
     </div>
   );

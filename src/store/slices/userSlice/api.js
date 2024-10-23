@@ -14,9 +14,19 @@ export const userApi = createApi({
         },
       }),
     }),
+    getAllUsers: builder.query({
+      query: (query) => ({
+        url: `/user/all${query?query:''}`,
+        method: "GET",
+        headers: {
+          authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      }),
+    }),
   }),
 });
 
 export const {
   useGetUserQuery,
+  useGetAllUsersQuery
 } = userApi;

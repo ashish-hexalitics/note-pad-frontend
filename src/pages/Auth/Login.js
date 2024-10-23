@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLoginMutation } from "../../store/slices/authSlice/api";
 import { useNavigate } from 'react-router-dom';
+import { Link } from "react-router-dom";
 
 function Login() {
   const dispatch = useDispatch();
@@ -68,6 +69,9 @@ function Login() {
             </p>
           )}
         </form>
+        <Link to="/register" className=" text-indigo-600 mt-2">
+              Register
+            </Link>
       </div>
     </div>
   );
