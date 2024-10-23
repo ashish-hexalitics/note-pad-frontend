@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   useGetNoteByIdApiQuery,
   useUpdateNotesApiMutation,
   useUpdateNotesCollaboratorsApiMutation,
   useRemoveNotesCollaboratorsApiMutation,
   useUpdatePermissionCollaboratorsApiMutation,
+  useCheckPermissionCollaboratorsApiMutation,
 } from "../../store/slices/noteSlice/api";
 import { setNote } from "../../store/slices/noteSlice/reducer";
 import { useDispatch, useSelector } from "react-redux";
@@ -19,11 +20,6 @@ import UserSearchDropdown from "../../components/UserSearchDropdown";
 
 function AddNote() {
   const params = useParams();
-  const location = useLocation();
-  const isEditable =
-    location.pathname.includes("add-note") ||
-    location.pathname.includes("edit-note");
-
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.userSlice);
   const note = useSelector((state) => state.noteSlice.note);
@@ -47,6 +43,8 @@ function AddNote() {
     useRemoveNotesCollaboratorsApiMutation();
   const [updatePermissionCollaboratorsApi] =
     useUpdatePermissionCollaboratorsApiMutation();
+  const [checkPermissionCollaboratorsApi] =
+    useCheckPermissionCollaboratorsApiMutation();
 
   useEffect(() => {
     if (noteData && !isLoading && !isError) {
@@ -78,8 +76,9 @@ function AddNote() {
       });
       socket.on("sentJoinedUsers", (data) => {
         const { collaborators, onlineUsers } = data;
-        const updatedCollaborators = collaborators.data.collaborators.map(
-          (collab) => {
+        const updatedCollaborators =
+          Array.isArray(collaborators?.data?.collaborators) &&
+          collaborators?.data?.collaborators.map((collab) => {
             const onUser = onlineUsers.find(
               (onlineUser) => onlineUser._id === collab.collaboratorId
             );
@@ -87,13 +86,39 @@ function AddNote() {
               ...collab,
               isOnline: onUser?.isOnline || false,
             };
-          }
-        );
+          });
         setCollaborators(updatedCollaborators);
-        console.log("Updated Collaborators:", updatedCollaborators);
+      });
+      socket.on("noteContentUpdated", (data) => {
+        setMessagging(data.messagging);
+        setContent(data.currentContent);
+        // setContent(data.content);
+      });
+
+      socket.on("resetMessegSuccess", () => {
+        setMessagging([]);
       });
     }
   }, [socket]);
+
+  useEffect(() => {
+    if (messagging.length > 0) {
+      setTimeout(() => {
+        socket.emit("resetMesseging", {});
+      }, 3000);
+    }
+  }, [messagging]);
+
+  useEffect(() => {
+    if (params.noteId) {
+      setUserPermisstion(params.noteId);
+    }
+  }, [params.noteId]);
+
+  const setUserPermisstion = async (noteId) => {
+  const permissionData =  await checkPermissionCollaboratorsApi(noteId).unwrap();
+  setPermision(permissionData.permission)
+  };
 
   const { data: userData } = useGetUserQuery();
 
@@ -176,18 +201,19 @@ function AddNote() {
       permission: e.target.value,
       collaboratorId: collaborator.collaboratorId,
     }).unwrap();
-    setCollaborators(collaborators.map(colaab=>{
-      if(colaab.collaboratorId === collaborator.collaboratorId){
-        return {...colaab, permission: e.target.value }
-      }
-      return colaab
-    }));
+    setCollaborators(
+      collaborators.map((colaab) => {
+        if (colaab.collaboratorId === collaborator.collaboratorId) {
+          return { ...colaab, permission: e.target.value };
+        }
+        return colaab;
+      })
+    );
   };
 
   const handledropdownchange = (user) => {
     console.log(user, "selct");
   };
-
 
   return (
     <div className="min-h-screen bg-gray-100 p-6 flex justify-center items-start space-x-10">
@@ -216,7 +242,7 @@ function AddNote() {
               rows="8"
               className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
               placeholder="Write your note content here..."
-              disabled={!isEditable}
+              disabled={permision!=='edit'}
             ></textarea>
           </div>
         </div>
@@ -225,7 +251,7 @@ function AddNote() {
             messagging.length > 0 &&
             messagging
               .filter((msg) => msg.userId !== user._id)
-              .map((messagge, index) => {
+              .map((message, index) => {
                 return (
                   <div
                     key={index}
@@ -233,12 +259,12 @@ function AddNote() {
                   >
                     {/* User's message with justified text */}
                     <div className="w-full text-justify text-green-500">
-                      <span className="inline-block">{messagge.messagge}</span>
+                      <span className="inline-block">{message.message}</span>
                     </div>
 
                     {/* Content block with justified text */}
                     <div className="w-full text-justify text-gray-500">
-                      {messagge.content}
+                      {message.content}
                     </div>
                   </div>
                 );

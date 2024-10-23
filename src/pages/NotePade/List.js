@@ -15,7 +15,11 @@ import { useDispatch, useSelector } from "react-redux";
 function NotepadList() {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.userSlice);
-  const { data, isLoading, isError, refetch } = useGetNotesApiQuery(user?._id);
+  const [searchQuery, setSearchQuery] = useState("");
+  const { data, isLoading, isError, refetch } = useGetNotesApiQuery({
+    userId: user?._id,
+    searchTerm: searchQuery,
+  });
   const { data: collabNotes } = useGetNotesByCollaboratorIdApiQuery(user?._id);
 
   console.log(data, collabNotes, "collabNotes");
@@ -30,7 +34,6 @@ function NotepadList() {
   const [deleteNoteApi, { isLoading: isDeleting, isError: isDeleteError }] =
     useDeleteNotesApiMutation();
 
-  const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [title, setTitle] = useState(""); // For the new note title
   const navigate = useNavigate();
@@ -40,6 +43,12 @@ function NotepadList() {
       dispatch(getNotes(data.data));
     }
   }, [data, isLoading, isError, dispatch]);
+
+  useEffect(() => {
+    if (searchQuery) {
+      refetch();
+    }
+  }, [searchQuery]);
 
   useEffect(() => {
     if (collabNotes) {

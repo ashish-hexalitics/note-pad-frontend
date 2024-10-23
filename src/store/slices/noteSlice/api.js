@@ -6,14 +6,23 @@ export const noteApi = createApi({
   baseQuery: baseQueryWithInterceptor,
   endpoints: (builder) => ({
     getNotesApi: builder.query({
-      query: (userId) => ({
-        url: `/notes/user/${userId}`,
-        method: "GET",
-        headers: {
-          authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        },
-      }),
-    }),
+      query: ({ userId, searchTerm }) => {
+        const searchParams = new URLSearchParams();
+    
+        // Add searchTerm if provided
+        if (searchTerm) {
+          searchParams.append("search", searchTerm);
+        }
+    
+        return {
+          url: `/notes/user/${userId}?${searchParams.toString()}`, // Append search query
+          method: "GET",
+          headers: {
+            authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        };
+      },
+    }),    
     getNotesByCollaboratorIdApi: builder.query({
       query: (collaboratorId) => ({
         url: `/notes/collaborator/${collaboratorId}`,
@@ -95,6 +104,15 @@ export const noteApi = createApi({
         },
       }),
     }),
+    checkPermissionCollaboratorsApi: builder.mutation({
+      query: (noteId) => ({
+        url: `/notes/permission/${noteId}`,
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      }),
+    }),
   }),
 });
 
@@ -107,5 +125,6 @@ export const {
   useDeleteNotesApiMutation,
   useUpdateNotesCollaboratorsApiMutation,
   useRemoveNotesCollaboratorsApiMutation,
-  useUpdatePermissionCollaboratorsApiMutation
+  useUpdatePermissionCollaboratorsApiMutation,
+  useCheckPermissionCollaboratorsApiMutation
 } = noteApi;
