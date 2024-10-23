@@ -18,6 +18,10 @@ const baseQueryWithInterceptor = async (args, api, extraOptions) => {
     };
   }
 
+  if (result.error && result.error.status === 403) {
+    window.location.href = '/user/notes'
+  }
+
   return result;
 };
 

@@ -94,9 +94,13 @@ function AddNote() {
         setContent(data.currentContent);
         // setContent(data.content);
       });
-
       socket.on("resetMessegSuccess", () => {
         setMessagging([]);
+      });
+      socket.on("removeCollaboratorsSuccess", (collaboratorId)=>{
+        setCollaborators((prev) =>
+          prev.filter((collab) => collab.collaboratorId !== collaboratorId)
+        );
       });
     }
   }, [socket]);
@@ -116,8 +120,10 @@ function AddNote() {
   }, [params.noteId]);
 
   const setUserPermisstion = async (noteId) => {
-  const permissionData =  await checkPermissionCollaboratorsApi(noteId).unwrap();
-  setPermision(permissionData.permission)
+    const permissionData = await checkPermissionCollaboratorsApi(
+      noteId
+    ).unwrap();
+    setPermision(permissionData.permission);
   };
 
   const { data: userData } = useGetUserQuery();
@@ -168,14 +174,14 @@ function AddNote() {
   };
 
   const handleRemoveCollaborator = (collaboratorId) => {
-    console.log(collaboratorId);
     setCollaborators((prev) =>
-      prev.filter((collab) => collab.id !== collaboratorId)
+      prev.filter((collab) => collab.collaboratorId !== collaboratorId)
     );
     removeNotesCollaboratorsApi({
       collaboratorId,
       noteId: params.noteId,
     }).unwrap();
+    socket.emit("removeCollaborators", collaboratorId);
   };
 
   const handleInvite = async (selectedUser, permission) => {
@@ -242,7 +248,7 @@ function AddNote() {
               rows="8"
               className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
               placeholder="Write your note content here..."
-              disabled={permision!=='edit'}
+              disabled={permision !== "edit"}
             ></textarea>
           </div>
         </div>
@@ -284,16 +290,16 @@ function AddNote() {
                 className="flex justify-between items-center bg-gray-100 p-2 rounded-md"
               >
                 {/* Flex container for the name and online status */}
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-between space-x-2">
                   {/* Online/Offline Indicator */}
-                  <span
+                  {/* <span
                     className={`inline-block w-3 h-3 rounded-full ${
                       collaborator.isOnline ||
                       collaborator.collaboratorId === user._id
                         ? "bg-green-500"
                         : "bg-red-500"
                     }`}
-                  ></span>
+                  ></span> */}
 
                   {/* Collaborator's name */}
                   <span>
@@ -301,28 +307,27 @@ function AddNote() {
                       ? "You"
                       : collaborator.name}
                   </span>
+                  {/* Remove button (visible if the current user is the owner) */}
+                  {noteData?.data?.isOwner && (
+                    <div className="ms-2">
+                      <select
+                        value={collaborator.permission}
+                        onChange={(e) => handlePermission(e, collaborator)}
+                      >
+                        <option value="view">Can View</option>
+                        <option value="edit">Can Edit</option>
+                      </select>
+                      <button
+                        onClick={() =>
+                          handleRemoveCollaborator(collaborator.collaboratorId)
+                        }
+                        className="text-red-500 hover:text-red-700 font-semibold ms-2"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
                 </div>
-
-                {/* Remove button (visible if the current user is the owner) */}
-                {noteData?.data?.isOwner && (
-                  <div>
-                    <select
-                      value={collaborator.permission}
-                      onChange={(e) => handlePermission(e, collaborator)}
-                    >
-                      <option value="view">Can View</option>
-                      <option value="edit">Can Edit</option>
-                    </select>
-                    <button
-                      onClick={() =>
-                        handleRemoveCollaborator(collaborator.collaboratorId)
-                      }
-                      className="text-red-500 hover:text-red-700 font-semibold"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                )}
               </li>
             ))
           ) : (
