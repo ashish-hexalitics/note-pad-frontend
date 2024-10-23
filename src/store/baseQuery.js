@@ -8,11 +8,11 @@ const baseQueryWithInterceptor = async (args, api, extraOptions) => {
   })(args, api, extraOptions);
 
   // Check for 403 status
-  if (result.error && result.error.status === 403) {
+  if (result.error && result.error.status === 401) {
     api.dispatch(logout());
     return {
       error: {
-        status: 403,
+        status: 401,
         data: "You have been logged out due to a 403 response",
       },
     };

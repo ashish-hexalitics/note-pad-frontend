@@ -76,6 +76,25 @@ export const noteApi = createApi({
         },
       }),
     }),
+    removeNotesCollaboratorsApi: builder.mutation({
+      query: (data) => ({
+        url: `/notes/collaborators/${data.noteId}/${data.collaboratorId}`,
+        method: "DELETE",
+        headers: {
+          authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      }),
+    }),
+    updatePermissionCollaboratorsApi: builder.mutation({
+      query: (data) => ({
+        url: `/notes/collaborators/${data.collaboratorId}`,
+        body: data,
+        method: "PUT",
+        headers: {
+          authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      }),
+    }),
   }),
 });
 
@@ -87,4 +106,6 @@ export const {
   useUpdateNotesApiMutation,
   useDeleteNotesApiMutation,
   useUpdateNotesCollaboratorsApiMutation,
+  useRemoveNotesCollaboratorsApiMutation,
+  useUpdatePermissionCollaboratorsApiMutation
 } = noteApi;
