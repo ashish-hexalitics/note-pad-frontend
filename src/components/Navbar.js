@@ -8,7 +8,8 @@ function Navbar() {
   return (
     <nav className="bg-gradient-to-r from-purple-600 to-indigo-600 shadow-md p-4" style={{height:'70px'}}>
       <div className="container mx-auto flex justify-between items-center">
-        <ul className="flex space-x-6 text-white font-semibold">
+      <h1 className="text-2xl text-white font-extrabold">NotesHub</h1>
+      <ul className="flex space-x-6 text-white font-semibold">
           <li>
             <Link
               to="/"

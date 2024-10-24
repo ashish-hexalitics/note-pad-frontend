@@ -2,11 +2,11 @@ import React from "react";
 
 function NotePadeEditor({note,content,handlechange,user,messagging,permision}) {
   return (
-    <div className="max-w-5xl w-full bg-white p-8 rounded-lg shadow-md">
+    <div className="min-w-5xl w-full bg-white px-4 py-8 flex flex-col items-start">
       <h1 className="text-4xl font-bold mb-8 text-center text-indigo-600">Edit Your Note</h1>
 
       {/* Note Title Display */}
-      <div className="mb-6">
+      <div className="mb-6 w-full">
         <label className="block text-lg font-semibold mb-2">Note Title:</label>
         <p className="w-full p-2 border rounded-md bg-gray-100">
           {note?.title || "No title available"}
@@ -14,7 +14,7 @@ function NotePadeEditor({note,content,handlechange,user,messagging,permision}) {
       </div>
 
       {/* Note Content */}
-      <div className="mb-6">
+      <div className="mb-6 w-full">
         <div>
           <label className="block text-lg font-semibold mb-2">
             Note Content

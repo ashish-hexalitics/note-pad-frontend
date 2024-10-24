@@ -16,8 +16,8 @@ import {
 } from "../../store/slices/userSlice/api";
 import { setUser } from "../../store/slices/userSlice/reducer";
 import io from "socket.io-client";
-import UserSearchDropdown from "../../components/UserSearchDropdown";
 import NotePadeEditor from "../../components/NotePadeEditor";
+import NotePadePermission from "../../components/NotePadePermission";
 
 function AddNote() {
   const params = useParams();
@@ -29,8 +29,6 @@ function AddNote() {
   const [messagging, setMessagging] = useState([]);
   const [permision, setPermision] = useState("view");
   const [socket, setSocket] = useState(null);
-
-  const navigate = useNavigate();
 
   const {
     data: noteData,
@@ -203,7 +201,6 @@ function AddNote() {
   };
 
   const handlePermission = (e, collaborator) => {
-    console.log(collaborator, e.target.value);
     updatePermissionCollaboratorsApi({
       permission: e.target.value,
       collaboratorId: collaborator.collaboratorId,
@@ -223,7 +220,7 @@ function AddNote() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6 flex justify-center items-start space-x-10">
+    <div className="min-h-screen w-full bg-gray-100 flex justify-between">
       <NotePadeEditor
         note={note}
         content={content}
@@ -232,70 +229,16 @@ function AddNote() {
         messagging={messagging}
         permision={permision}
       />
-      {/* Options Section */}
-      <div className="w-80 bg-white p-6 rounded-lg shadow-md">
-        {/* Collaborators List */}
-        <h3 className="text-lg font-semibold mb-2">Collaborators</h3>
-        <ul className="space-y-2">
-          {collaborators.length > 0 ? (
-            collaborators.map((collaborator, index) => (
-              <li
-                key={index}
-                className="flex justify-between items-center bg-gray-100 p-2 rounded-md"
-              >
-                {/* Flex container for the name and online status */}
-                <div className="flex items-center justify-between space-x-2">
-                  {/* Online/Offline Indicator */}
-                  {/* <span
-                    className={`inline-block w-3 h-3 rounded-full ${
-                      collaborator.isOnline ||
-                      collaborator.collaboratorId === user._id
-                        ? "bg-green-500"
-                        : "bg-red-500"
-                    }`}
-                  ></span> */}
-
-                  {/* Collaborator's name */}
-                  <span>
-                    {collaborator.collaboratorId === user._id
-                      ? "You"
-                      : collaborator.name}
-                  </span>
-                  {/* Remove button (visible if the current user is the owner) */}
-                  {noteData?.data?.isOwner && (
-                    <div className="ms-2">
-                      <select
-                        value={collaborator.permission}
-                        onChange={(e) => handlePermission(e, collaborator)}
-                      >
-                        <option value="view">Can View</option>
-                        <option value="edit">Can Edit</option>
-                      </select>
-                      <button
-                        onClick={() =>
-                          handleRemoveCollaborator(collaborator.collaboratorId)
-                        }
-                        className="text-red-500 hover:text-red-700 font-semibold ms-2"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </li>
-            ))
-          ) : (
-            <p className="text-gray-500">No collaborators added yet.</p>
-          )}
-        </ul>
-        {allUsers?.data?.users && noteData?.data?.isOwner && (
-          <UserSearchDropdown
-            allUsers={allUsers?.data?.users}
-            handledropdownchange={handledropdownchange}
-            handleInvite={handleInvite}
-          />
-        )}
-      </div>
+      <NotePadePermission
+        handleRemoveCollaborator={handleRemoveCollaborator}
+        handlePermission={handlePermission}
+        handledropdownchange={handledropdownchange}
+        handleInvite={handleInvite}
+        collaborators={collaborators}
+        allUsers={allUsers?.data?.users}
+        noteData={noteData?.data}
+        user={user}
+      />
     </div>
   );
 }
