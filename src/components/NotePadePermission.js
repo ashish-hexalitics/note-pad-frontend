@@ -10,10 +10,11 @@ function NotePadePermission({
   handlePermission,
   handledropdownchange,
   handleInvite,
+  inviteMessage,
+  invitedErrorType
 }) {
   return (
     <div className="w-80 bg-white p-6 shadow-md">
-      {/* Collaborators List */}
       <h3 className="text-lg font-semibold mb-2">Collaborators</h3>
       <ul className="space-y-2">
         {collaborators.length > 0 ? (
@@ -22,14 +23,12 @@ function NotePadePermission({
               key={index}
               className="flex justify-between items-center bg-gray-100 p-2 rounded-md"
             >
-              {/* Flex container for the name and online status */}
               <div className="flex items-center justify-between space-x-2">
                 <span>
                   {collaborator.collaboratorId === user._id
                     ? "You"
                     : collaborator.name}
                 </span>
-                {/* Remove button (visible if the current user is the owner) */}
                 {noteData && noteData?.isOwner && (
                   <div className="ms-2">
                     <select
@@ -61,6 +60,8 @@ function NotePadePermission({
           allUsers={allUsers}
           handledropdownchange={handledropdownchange}
           handleInvite={handleInvite}
+          invitedErrorType={invitedErrorType}
+          inviteMessage={inviteMessage}
         />
       )}
     </div>

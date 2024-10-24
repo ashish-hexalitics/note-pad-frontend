@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 
 function Register() {
-  const [register, { isLoading, isError }] = useRegisterMutation();
+  const [register, { isLoading, isError, error }] = useRegisterMutation();
   const navigate = useNavigate();
 
   // Local state for input values
@@ -112,7 +112,7 @@ function Register() {
 
           {isError && (
             <p className="text-red-500 text-center mt-4">
-              Registration failed. Please try again.
+              {error.data.message}
             </p>
           )}
         </form>

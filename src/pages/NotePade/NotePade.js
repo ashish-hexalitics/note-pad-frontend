@@ -31,7 +31,8 @@ function AddNote() {
   const [permision, setPermision] = useState("view");
   const [socket, setSocket] = useState(null);
   const [showAlertModal, setShowAlertModal] = useState(false);
-
+  const [inviteMessage, setInviteMessage] = useState("");
+  const [invitedErrorType, setInvitedErrorType] = useState("");
   const {
     data: noteData,
     isLoading,
@@ -199,7 +200,8 @@ function AddNote() {
       collaboratorId: selectedUser._id,
       permission,
     }).unwrap();
-
+    setInviteMessage(res?.message ? res?.message : "");
+    setInvitedErrorType(res?.status ? res?.status : "");
     // Handle inviting the user (you can make an API call here)
     console.log("Inviting user:", permission, selectedUser._id, res);
     // Call your invite API logic or socket event here
@@ -244,6 +246,8 @@ function AddNote() {
         allUsers={allUsers?.data?.users}
         noteData={noteData?.data}
         user={user}
+        inviteMessage={inviteMessage}
+        invitedErrorType={invitedErrorType}
       />
       <AlertModal
         isOpen={showAlertModal}

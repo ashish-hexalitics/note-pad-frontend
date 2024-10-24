@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 
 function Login() {
   const dispatch = useDispatch();
-  const [login, { isLoading, isError }] = useLoginMutation();
+  const [login, { isLoading, isError, error }] = useLoginMutation();
   const navigate = useNavigate();
 
   // Local state for input values
@@ -25,9 +25,13 @@ function Login() {
       console.error("Login failed:", error);
     }
   };
+  console.log("Login failed:", error);
 
   return (
-    <div className="flex justify-center items-center bg-gray-100" style={{height:'calc(100% - 70px)'}}>
+    <div
+      className="flex justify-center items-center bg-gray-100"
+      style={{ height: "calc(100% - 70px)" }}
+    >
       <div className="w-full max-w-md bg-white p-10 shadow-2xl rounded-lg">
         <h2 className="text-3xl font-extrabold mb-6 text-center text-gray-800">
           Welcome Back!
@@ -46,7 +50,9 @@ function Login() {
           </div>
 
           <div className="mb-6">
-            <label className="block text-gray-700 font-semibold">Password</label>
+            <label className="block text-gray-700 font-semibold">
+              Password
+            </label>
             <input
               type="password"
               value={password}
@@ -67,7 +73,7 @@ function Login() {
 
           {isError && (
             <p className="text-red-500 text-center mt-4">
-              Login failed. Please try again.
+              {error.data.message}
             </p>
           )}
         </form>
