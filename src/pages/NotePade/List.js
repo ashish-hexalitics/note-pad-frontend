@@ -22,7 +22,8 @@ function NotepadList() {
     userId: user?._id,
     searchTerm: searchQuery,
   });
-  const { data: collabNotes } = useGetNotesByCollaboratorIdApiQuery(user?._id);
+  const { data: collabNotes, refetch: refetchCollaboratorNotes } =
+    useGetNotesByCollaboratorIdApiQuery(user?._id);
 
   const { notes, collaborateNotes } = useSelector((state) => state.noteSlice);
 
@@ -92,8 +93,10 @@ function NotepadList() {
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-4xl font-bold mb-8 text-center text-indigo-600">My Notepad</h1>
-  
+        <h1 className="text-4xl font-bold mb-8 text-center text-indigo-600">
+          My Notepad
+        </h1>
+
         {/* Search bar */}
         <div className="flex items-center mb-6 shadow-md">
           <input
@@ -107,7 +110,7 @@ function NotepadList() {
             Search
           </button>
         </div>
-  
+
         {/* "Add Note" button */}
         <div className="flex justify-end mb-6">
           <button
@@ -117,7 +120,7 @@ function NotepadList() {
             Add Note
           </button>
         </div>
-  
+
         {/* Notes Cards */}
         <MyNoteList
           notes={filteredNotes}
@@ -125,15 +128,20 @@ function NotepadList() {
           deleteNote={deleteNote}
           title={"My notes"}
         />
-  
-        <CollaborateNoteList notes={collaborateNotes} title={"Collaborated Notes"} />
-  
+
+        <CollaborateNoteList
+          notes={collaborateNotes}
+          title={"Collaborated Notes"}
+        />
+
         {/* Add Note Modal */}
         {isModalOpen && (
           <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center">
             <div className="bg-white w-full max-w-lg p-8 rounded-lg shadow-xl transition-transform transform-gpu animate-fade-in">
-              <h3 className="text-2xl font-bold mb-4 text-indigo-600">Add New Note</h3>
-  
+              <h3 className="text-2xl font-bold mb-4 text-indigo-600">
+                Add New Note
+              </h3>
+
               {/* Note Title */}
               <div className="mb-4">
                 <label className="block text-lg font-semibold text-gray-700 mb-2">
@@ -147,7 +155,7 @@ function NotepadList() {
                   placeholder="Enter note title..."
                 />
               </div>
-  
+
               <div className="flex justify-end space-x-4 mt-6">
                 <button
                   onClick={() => setIsModalOpen(false)} // Close modal
@@ -163,7 +171,7 @@ function NotepadList() {
                   {isAdding ? "Adding..." : "Add Note"}
                 </button>
               </div>
-  
+
               {/* Show error message if failed to add note */}
               {isAddError && (
                 <p className="text-red-500 mt-4">Failed to add note.</p>
@@ -174,7 +182,6 @@ function NotepadList() {
       </div>
     </div>
   );
-  
 }
 
 export default NotepadList;

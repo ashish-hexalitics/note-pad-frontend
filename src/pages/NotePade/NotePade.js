@@ -31,6 +31,7 @@ function AddNote() {
   const [permision, setPermision] = useState("view");
   const [socket, setSocket] = useState(null);
   const [showAlertModal, setShowAlertModal] = useState(false);
+  const [showPermisionAlertModal, setShowPermisionAlertModal] = useState(false);
   const [inviteMessage, setInviteMessage] = useState("");
   const [invitedErrorType, setInvitedErrorType] = useState("");
   const {
@@ -60,7 +61,6 @@ function AddNote() {
     if (user) {
       const newSocket = io("http://localhost:8000");
       setSocket(newSocket);
-      console.log(newSocket);
     }
     return () => {
       socket && socket.disconnect();
@@ -100,11 +100,19 @@ function AddNote() {
         setMessagging([]);
       });
       socket.on("removeCollaboratorsSuccess", (collaboratorId) => {
-        setCollaborators((prev) =>
-          prev.filter((collab) => collab.collaboratorId !== collaboratorId)
+        setCollaborators(
+          (prev) =>
+            prev &&
+            prev.filter((collab) => collab.collaboratorId !== collaboratorId)
         );
         if (user._id === collaboratorId) {
           setShowAlertModal(true);
+        }
+      });
+      socket.on("updatedCollaboratorPermission", (updatedPermission) => {
+        if (user._id === updatedPermission.collaboratorId) {
+          setPermision(updatedPermission.permission);
+          setShowPermisionAlertModal(true);
         }
       });
     }
@@ -169,8 +177,6 @@ function AddNote() {
     socket.emit("updateNoteContent", updateNoteContentdata);
     socket.on("noteContentUpdated", (data) => {
       setMessagging(data.messagging);
-      console.log(data.messagging, "updatedNote");
-      // setContent(data.content);
     });
     await updateNote({
       content: e.target.value,
@@ -202,9 +208,7 @@ function AddNote() {
     }).unwrap();
     setInviteMessage(res?.message ? res?.message : "");
     setInvitedErrorType(res?.status ? res?.status : "");
-    // Handle inviting the user (you can make an API call here)
-    console.log("Inviting user:", permission, selectedUser._id, res);
-    // Call your invite API logic or socket event here
+    socket.emit("sendCollaboratorNotes", user);
   };
 
   const handlePermission = (e, collaborator) => {
@@ -212,12 +216,18 @@ function AddNote() {
       permission: e.target.value,
       collaboratorId: collaborator.collaboratorId,
     }).unwrap();
+
+    socket.emit("updateCollaboratorPermission", {
+      permission: e.target.value,
+      collaboratorId: collaborator.collaboratorId,
+    });
+
     setCollaborators(
-      collaborators.map((colaab) => {
-        if (colaab.collaboratorId === collaborator.collaboratorId) {
-          return { ...colaab, permission: e.target.value };
+      collaborators.map((collab) => {
+        if (collab.collaboratorId === collaborator.collaboratorId) {
+          return { ...collab, permission: e.target.value };
         }
-        return colaab;
+        return collab;
       })
     );
   };
@@ -257,6 +267,18 @@ function AddNote() {
         }}
         message="Your Note access denied"
         type="error"
+      />
+      <AlertModal
+        isOpen={showPermisionAlertModal}
+        onClose={() => {
+          setShowPermisionAlertModal(false);
+        }}
+        message={`Permission Updated ! ${
+          permision === "edit"
+            ? "Your Can Edit This Note Now"
+            : "Your Can View Only This Note"
+        }`}
+        type="success"
       />
     </div>
   );

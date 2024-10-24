@@ -8,7 +8,7 @@ function NotePadeEditor({
   user,
   messagging,
   permision,
-  noteData
+  noteData,
 }) {
   const navigate = useNavigate();
   return (
@@ -17,7 +17,14 @@ function NotePadeEditor({
         <h1 className="text-4xl font-bold text-left text-indigo-600">
           Edit Your Note
         </h1>
-        {noteData && noteData?.isOwner &&<button onClick={()=>navigate(`/user/history/${noteData?._id}`)} className="text-gray-500">See All History</button>}
+        {noteData && noteData?.isOwner && (
+          <button
+            onClick={() => navigate(`/user/history/${noteData?._id}`)}
+            className="text-gray-500"
+          >
+            See All History
+          </button>
+        )}
       </div>
 
       {/* Note Title Display */}
@@ -30,19 +37,23 @@ function NotePadeEditor({
 
       {/* Note Content */}
       <div className="mb-6 w-full">
-        <div>
-          <label className="block text-lg font-semibold mb-2">
-            Note Content
-          </label>
-          <textarea
-            value={content}
-            onChange={handlechange}
-            rows="8"
-            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            placeholder="Write your note content here..."
-            disabled={permision !== "edit"}
-          ></textarea>
-        </div>
+        {permision === "edit" ? (
+          <div>
+            <label className="block text-lg font-semibold mb-2">
+              Note Content
+            </label>
+            <textarea
+              value={content}
+              onChange={handlechange}
+              rows="8"
+              className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              placeholder="Write your note content here..."
+              disabled={permision !== "edit"}
+            ></textarea>
+          </div>
+        ) : (
+          <div>{content}</div>
+        )}
       </div>
       <div className="w-full">
         {Array.isArray(messagging) &&
