@@ -4,8 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 
 function Register() {
-  const [register, { isLoading, isError, data }] = useRegisterMutation();
-
+  const [register, { isLoading, isError }] = useRegisterMutation();
   const navigate = useNavigate();
 
   // Local state for input values
@@ -16,7 +15,7 @@ function Register() {
 
   // Form submission handler
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevent the default form submission
+    e.preventDefault();
 
     if (password !== confirmPassword) {
       alert("Passwords do not match");
@@ -32,84 +31,97 @@ function Register() {
       }).unwrap();
       localStorage.setItem("access_token", result.token);
       navigate("/login");
-      // Handle successful registration (e.g., show success message or redirect)
-      console.log("Registration successful:", result);
     } catch (error) {
-      // Handle registration error
       console.error("Registration failed:", error);
     }
   };
 
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-100">
-      <div className="w-full max-w-md bg-white p-8 shadow-lg rounded-lg">
-        <h2 className="text-2xl font-bold mb-6 text-center">Register</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-gray-700">Full Name</label>
-            <input
-              type="text"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)} // Update full name state
-              className="w-full p-2 mt-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
-              placeholder="John Doe"
-              required
-            />
+    <div
+      className="flex justify-center items-center bg-gray-100"
+      style={{ height: "calc(100% - 70px)" }}
+    >
+      <div className="w-full max-w-2xl bg-white p-10 shadow-2xl rounded-lg">
+        <h2 className="text-3xl font-extrabold mb-6 text-center text-gray-800">
+          Create Your Account
+        </h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 space-x-4">
+            <div className="">
+              <label className="block text-gray-700 font-semibold">
+                Full Name
+              </label>
+              <input
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="w-full p-3 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
+                placeholder="John Doe"
+                required
+              />
+            </div>
+            <div className="">
+              <label className="block text-gray-700 font-semibold">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full p-3 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
+                placeholder="example@email.com"
+                required
+              />
+            </div>
           </div>
+          <div className="grid grid-cols-2 space-x-4">
+            <div className="">
+              <label className="block text-gray-700 font-semibold">
+                Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full p-3 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
+                placeholder="********"
+                required
+              />
+            </div>
 
-          <div className="mb-4">
-            <label className="block text-gray-700">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)} // Update email state
-              className="w-full p-2 mt-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
-              placeholder="example@email.com"
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-gray-700">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)} // Update password state
-              className="w-full p-2 mt-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
-              placeholder="********"
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-gray-700">Confirm Password</label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)} // Update confirm password state
-              className="w-full p-2 mt-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
-              placeholder="********"
-              required
-            />
+            <div className="">
+              <label className="block text-gray-700 font-semibold">
+                Confirm Password
+              </label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full p-3 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
+                placeholder="********"
+                required
+              />
+            </div>
           </div>
 
           <button
             type="submit"
-            className="w-full bg-indigo-500 text-white py-2 px-4 rounded-md hover:bg-indigo-600 transition duration-200"
-            disabled={isLoading} // Disable button while loading
+            className="w-full bg-indigo-500 text-white py-3 px-4 rounded-lg font-bold hover:bg-indigo-600 transition duration-300 ease-in-out shadow-md hover:shadow-lg"
+            disabled={isLoading}
           >
             {isLoading ? "Loading..." : "Register"}
           </button>
 
           {isError && (
-            <p className="text-red-500 text-center mt-2">
+            <p className="text-red-500 text-center mt-4">
               Registration failed. Please try again.
             </p>
           )}
         </form>
-        <Link to="/login" className=" text-indigo-600 mt-2">
-          Login
-        </Link>
+
+        <div className="text-center mt-6">
+          <Link to="/login" className="text-indigo-600 hover:underline">
+            Already have an account? Login
+          </Link>
+        </div>
       </div>
     </div>
   );

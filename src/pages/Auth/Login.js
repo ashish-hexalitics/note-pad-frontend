@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { useLoginMutation } from "../../store/slices/authSlice/api";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 
 function Login() {
   const dispatch = useDispatch();
-  const [login, { isLoading, isError, data }] = useLoginMutation();
-  const navigate = useNavigate()
+  const [login, { isLoading, isError }] = useLoginMutation();
+  const navigate = useNavigate();
 
   // Local state for input values
   const [email, setEmail] = useState("");
@@ -18,8 +18,8 @@ function Login() {
     try {
       e.preventDefault();
       const result = await login({ email, password }).unwrap();
-      localStorage.setItem('access_token',result.token)
-      navigate('/user/notes')
+      localStorage.setItem("access_token", result.token);
+      navigate("/user/notes");
     } catch (error) {
       // Handle login error
       console.error("Login failed:", error);
@@ -27,29 +27,31 @@ function Login() {
   };
 
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-100">
-      <div className="w-full max-w-md bg-white p-8 shadow-lg rounded-lg">
-        <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
+    <div className="flex justify-center items-center bg-gray-100" style={{height:'calc(100% - 70px)'}}>
+      <div className="w-full max-w-md bg-white p-10 shadow-2xl rounded-lg">
+        <h2 className="text-3xl font-extrabold mb-6 text-center text-gray-800">
+          Welcome Back!
+        </h2>
         <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-gray-700">Email</label>
+          <div className="mb-6">
+            <label className="block text-gray-700 font-semibold">Email</label>
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)} // Update email state
-              className="w-full p-2 mt-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full p-3 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
               placeholder="example@email.com"
               required
             />
           </div>
 
-          <div className="mb-4">
-            <label className="block text-gray-700">Password</label>
+          <div className="mb-6">
+            <label className="block text-gray-700 font-semibold">Password</label>
             <input
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)} // Update password state
-              className="w-full p-2 mt-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full p-3 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
               placeholder="********"
               required
             />
@@ -57,21 +59,24 @@ function Login() {
 
           <button
             type="submit"
-            className="w-full bg-indigo-500 text-white py-2 px-4 rounded-md hover:bg-indigo-600 transition duration-200"
-            disabled={isLoading} // Disable button while loading
+            className="w-full bg-indigo-500 text-white py-3 px-4 rounded-lg font-bold hover:bg-indigo-600 transition duration-300 ease-in-out shadow-md hover:shadow-lg"
+            disabled={isLoading}
           >
-            {isLoading ? "Loading..." : "Login"}
+            {isLoading ? "Logging in..." : "Login"}
           </button>
 
           {isError && (
-            <p className="text-red-500 text-center mt-2">
+            <p className="text-red-500 text-center mt-4">
               Login failed. Please try again.
             </p>
           )}
         </form>
-        <Link to="/register" className=" text-indigo-600 mt-2">
-              Register
-            </Link>
+
+        <div className="text-center mt-6">
+          <Link to="/register" className="text-indigo-600 hover:underline">
+            Don't have an account? Register
+          </Link>
+        </div>
       </div>
     </div>
   );

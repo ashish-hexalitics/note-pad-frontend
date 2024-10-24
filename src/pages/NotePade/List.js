@@ -10,6 +10,8 @@ import {
   getNotes,
   getcollaborateNotes,
 } from "../../store/slices/noteSlice/reducer";
+import MyNoteList from "../../components/MyNoteList";
+import CollaborateNoteList from "../../components/CollaborateNoteList";
 import { useDispatch, useSelector } from "react-redux";
 
 function NotepadList() {
@@ -21,8 +23,6 @@ function NotepadList() {
     searchTerm: searchQuery,
   });
   const { data: collabNotes } = useGetNotesByCollaboratorIdApiQuery(user?._id);
-
-  console.log(data, collabNotes, "collabNotes");
 
   const { notes, collaborateNotes } = useSelector((state) => state.noteSlice);
 
@@ -92,131 +92,78 @@ function NotepadList() {
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6 text-center">Notepad</h1>
-
+        <h1 className="text-4xl font-bold mb-8 text-center text-indigo-600">My Notepad</h1>
+  
         {/* Search bar */}
-        <div className="flex mb-6">
+        <div className="flex items-center mb-6 shadow-md">
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full p-2 border rounded-l-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            className="w-full p-3 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
             placeholder="Search notes..."
           />
+          <button className="bg-indigo-500 text-white px-4 py-3 rounded-r-md hover:bg-indigo-600 transition duration-300">
+            Search
+          </button>
         </div>
-
+  
         {/* "Add Note" button */}
         <div className="flex justify-end mb-6">
           <button
             onClick={() => setIsModalOpen(true)} // Open modal
-            className="bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600 transition duration-200"
+            className="bg-indigo-500 text-white px-6 py-2 rounded-md shadow-md hover:bg-indigo-600 transition duration-300"
           >
             Add Note
           </button>
         </div>
-
+  
         {/* Notes Cards */}
-        <p className="text-lg font-semibold mb-2">My notes</p>
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-2">
-          {filteredNotes.length > 0 ? (
-            filteredNotes.map((note, index) => (
-              <div
-                key={index}
-                className="bg-white p-4 rounded-lg shadow-md flex flex-col justify-between overflow-hidden"
-              >
-                <div className="mb-4">
-                  <p className="text-lg font-semibold">{note.title}</p>
-                  <p className="text-lg font-semibold">{note.content}</p>
-                </div>
-                <div className="flex justify-end space-x-4">
-                  <button
-                    onClick={() => navigate(`/user/edit-note/${note._id}`)}
-                    className="text-blue-500 hover:text-blue-700 font-semibold"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => deleteNote(note._id)} // Pass the noteId to delete
-                    className="text-red-500 hover:text-red-700 font-semibold"
-                    disabled={isDeleting} // Disable button while deleting
-                  >
-                    {isDeleting ? "Deleting..." : "Delete"}
-                  </button>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className="text-center text-gray-500">No notes found</p>
-          )}
-        </div>
-
-        {/* Notes Cards */}
-        <p className="text-lg font-semibold mb-2">invited notes</p>
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {collaborateNotes.length > 0 ? (
-            collaborateNotes.map((note, index) => (
-              <div
-                key={index}
-                className="bg-white p-4 rounded-lg shadow-md flex flex-col justify-between overflow-hidden"
-              >
-                <div className="mb-4">
-                  <p className="text-lg font-semibold">{note.title}</p>
-                  <p className="text-lg font-semibold">{note.content}</p>
-                </div>
-                <div className="flex justify-end space-x-4">
-                  <button
-                    onClick={() =>
-                      navigate(
-                        `/user/${
-                          note.permission === "edit" ? "edit" : "view"
-                        }-note/${note._id}`
-                      )
-                    }
-                    className="text-blue-500 hover:text-blue-700 font-semibold"
-                  >
-                    {note.permission === "edit" ? "Edit" : "View"}
-                  </button>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className="text-center text-gray-500">No notes found</p>
-          )}
-        </div>
-
+        <MyNoteList
+          notes={filteredNotes}
+          isDeleting={isDeleting}
+          deleteNote={deleteNote}
+          title={"My notes"}
+        />
+  
+        <CollaborateNoteList notes={collaborateNotes} title={"Collaborated Notes"} />
+  
         {/* Add Note Modal */}
         {isModalOpen && (
-          <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
-            <div className="bg-white w-full max-w-lg p-6 rounded-lg shadow-lg">
+          <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center">
+            <div className="bg-white w-full max-w-lg p-8 rounded-lg shadow-xl transition-transform transform-gpu animate-fade-in">
+              <h3 className="text-2xl font-bold mb-4 text-indigo-600">Add New Note</h3>
+  
               {/* Note Title */}
               <div className="mb-4">
-                <label className="block text-lg font-semibold mb-2">
-                  Add New Note Title
+                <label className="block text-lg font-semibold text-gray-700 mb-2">
+                  Note Title
                 </label>
                 <input
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                  placeholder="Enter the title of your note..."
+                  className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="Enter note title..."
                 />
               </div>
-              <div className="flex justify-end space-x-4 mt-4">
+  
+              <div className="flex justify-end space-x-4 mt-6">
                 <button
                   onClick={() => setIsModalOpen(false)} // Close modal
-                  className="bg-gray-400 text-white px-4 py-2 rounded-md hover:bg-gray-500 transition duration-200"
+                  className="bg-gray-400 text-white px-5 py-2 rounded-md hover:bg-gray-500 transition duration-200"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={addNote}
-                  className="bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600 transition duration-200"
+                  className="bg-indigo-500 text-white px-5 py-2 rounded-md hover:bg-indigo-600 transition duration-300"
                   disabled={isAdding} // Disable while adding note
                 >
                   {isAdding ? "Adding..." : "Add Note"}
                 </button>
               </div>
-
+  
               {/* Show error message if failed to add note */}
               {isAddError && (
                 <p className="text-red-500 mt-4">Failed to add note.</p>
@@ -227,6 +174,7 @@ function NotepadList() {
       </div>
     </div>
   );
+  
 }
 
 export default NotepadList;

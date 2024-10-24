@@ -17,6 +17,7 @@ import {
 import { setUser } from "../../store/slices/userSlice/reducer";
 import io from "socket.io-client";
 import UserSearchDropdown from "../../components/UserSearchDropdown";
+import NotePadeEditor from "../../components/NotePadeEditor";
 
 function AddNote() {
   const params = useParams();
@@ -97,7 +98,7 @@ function AddNote() {
       socket.on("resetMessegSuccess", () => {
         setMessagging([]);
       });
-      socket.on("removeCollaboratorsSuccess", (collaboratorId)=>{
+      socket.on("removeCollaboratorsSuccess", (collaboratorId) => {
         setCollaborators((prev) =>
           prev.filter((collab) => collab.collaboratorId !== collaboratorId)
         );
@@ -223,61 +224,14 @@ function AddNote() {
 
   return (
     <div className="min-h-screen bg-gray-100 p-6 flex justify-center items-start space-x-10">
-      <div className="max-w-5xl w-full bg-white p-8 rounded-lg shadow-md">
-        <h1 className="text-3xl font-bold mb-6 text-center">Add a New Note</h1>
-
-        {/* Note Title Display */}
-        <div className="mb-6">
-          <label className="block text-lg font-semibold mb-2">
-            Note Title:
-          </label>
-          <p className="w-full p-2 border rounded-md bg-gray-100">
-            {note?.title || "No title available"}
-          </p>
-        </div>
-
-        {/* Note Content */}
-        <div className="mb-6">
-          <div>
-            <label className="block text-lg font-semibold mb-2">
-              Note Content
-            </label>
-            <textarea
-              value={content}
-              onChange={handlechange}
-              rows="8"
-              className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
-              placeholder="Write your note content here..."
-              disabled={permision !== "edit"}
-            ></textarea>
-          </div>
-        </div>
-        <div className="w-full">
-          {Array.isArray(messagging) &&
-            messagging.length > 0 &&
-            messagging
-              .filter((msg) => msg.userId !== user._id)
-              .map((message, index) => {
-                return (
-                  <div
-                    key={index}
-                    className="w-full mb-6 p-6 rounded-lg shadow-md"
-                  >
-                    {/* User's message with justified text */}
-                    <div className="w-full text-justify text-green-500">
-                      <span className="inline-block">{message.message}</span>
-                    </div>
-
-                    {/* Content block with justified text */}
-                    <div className="w-full text-justify text-gray-500">
-                      {message.content}
-                    </div>
-                  </div>
-                );
-              })}
-        </div>
-      </div>
-
+      <NotePadeEditor
+        note={note}
+        content={content}
+        handlechange={handlechange}
+        user={user}
+        messagging={messagging}
+        permision={permision}
+      />
       {/* Options Section */}
       <div className="w-80 bg-white p-6 rounded-lg shadow-md">
         {/* Collaborators List */}

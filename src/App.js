@@ -9,8 +9,8 @@ import { privateRoutes, authRoutes } from "./routes/index";
 function App() {
   return (
     <Router>
+      <div className="h-screen">
       <Navbar />
-      <div>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="*" element={<NotFound />} />
