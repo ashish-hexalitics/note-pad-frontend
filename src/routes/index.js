@@ -3,6 +3,7 @@ import Register from "../pages/Auth/Register";
 import UserLayout from "../pages/UserLayout/index";
 import NotePadList from "../pages/NotePade/List";
 import NotePade from "../pages/NotePade/NotePade";
+import NoteHistory from "../pages/NotePade/NoteHistory";
 
 export const authRoutes = [
   {
@@ -46,5 +47,9 @@ export const userRoutes = [
   {
     path: "invitaion-note/:noteId",
     component: NotePade,
+  },
+  {
+    path: "history/:noteId",
+    component: NoteHistory,
   },
 ];

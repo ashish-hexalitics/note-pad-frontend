@@ -1,9 +1,24 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
-function NotePadeEditor({note,content,handlechange,user,messagging,permision}) {
+function NotePadeEditor({
+  note,
+  content,
+  handlechange,
+  user,
+  messagging,
+  permision,
+  noteData
+}) {
+  const navigate = useNavigate();
   return (
     <div className="min-w-5xl w-full bg-white px-4 py-8 flex flex-col items-start">
-      <h1 className="text-4xl font-bold mb-8 text-center text-indigo-600">Edit Your Note</h1>
+      <div className="flex mb-8 justify-between items-center w-full">
+        <h1 className="text-4xl font-bold text-left text-indigo-600">
+          Edit Your Note
+        </h1>
+        {noteData && noteData?.isOwner &&<button onClick={()=>navigate(`/user/history/${noteData?._id}`)} className="text-gray-500">See All History</button>}
+      </div>
 
       {/* Note Title Display */}
       <div className="mb-6 w-full">

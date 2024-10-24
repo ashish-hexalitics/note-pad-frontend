@@ -18,6 +18,7 @@ import { setUser } from "../../store/slices/userSlice/reducer";
 import io from "socket.io-client";
 import NotePadeEditor from "../../components/NotePadeEditor";
 import NotePadePermission from "../../components/NotePadePermission";
+import AlertModal from "../../components/common/AlertModal";
 
 function AddNote() {
   const params = useParams();
@@ -29,6 +30,7 @@ function AddNote() {
   const [messagging, setMessagging] = useState([]);
   const [permision, setPermision] = useState("view");
   const [socket, setSocket] = useState(null);
+  const [showAlertModal, setShowAlertModal] = useState(false);
 
   const {
     data: noteData,
@@ -100,6 +102,9 @@ function AddNote() {
         setCollaborators((prev) =>
           prev.filter((collab) => collab.collaboratorId !== collaboratorId)
         );
+        if (user._id === collaboratorId) {
+          setShowAlertModal(true);
+        }
       });
     }
   }, [socket]);
@@ -228,6 +233,7 @@ function AddNote() {
         user={user}
         messagging={messagging}
         permision={permision}
+        noteData={noteData?.data}
       />
       <NotePadePermission
         handleRemoveCollaborator={handleRemoveCollaborator}
@@ -238,6 +244,15 @@ function AddNote() {
         allUsers={allUsers?.data?.users}
         noteData={noteData?.data}
         user={user}
+      />
+      <AlertModal
+        isOpen={showAlertModal}
+        onClose={() => {
+          setShowAlertModal(false);
+          window.location.reload();
+        }}
+        message="Your Note access denied"
+        type="error"
       />
     </div>
   );
